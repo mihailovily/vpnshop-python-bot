@@ -42,7 +42,7 @@ async def main_page(message):
         keyboard.add(butt_cabinet, butt_shop, butt_admin)
     else:
         keyboard.add(butt_shop, butt_cabinet)  # здороваемся
-    await bot.reply_to(message, "Ты на главной странице")
+    await bot.reply_to(message, "Ты на главной странице", reply_markup=keyboard)
 
 @bot.message_handler(commands=['/admin'])
 @bot.message_handler(regexp="АдминОЧКА")
@@ -77,8 +77,31 @@ def get_report():
 def shutdown():
     os.system('shutdown now')
     
+def get_keys_list():
+    m = os.popen('cd keys && ls').read()
+    a = m.split()
+    return a
 
-# Handle all other messages with content_type 'text' (content_types defaults to ['text'])
+def count_keys():
+    return len(get_keys_list())
+    
+
+@bot.message_handler(commands=['/shop'])
+@bot.message_handler(regexp="Магазин")
+async def shop(message):
+    usr_id = str(message.from_user.id)  # userid
+    keys_left = count_keys()
+    usr_name = str(message.from_user.first_name)
+    if usr_id in admins:
+        answer_about_keys = 'Ключей осталось в базе: ' + str(keys_left)
+        await bot.send_message(usr_id, answer_about_keys)
+    keyboard = types.InlineKeyboardMarkup()  # генерируем клаву
+    butt_buy = types.InlineKeyboardButton(text='Купить ключ')
+    butt_valid = types.InlineKeyboardButton(text='Проверить срок действия ключа')
+    keyboard.add(butt_buy, butt_valid)
+    await bot.reply_to(message, 'Добро пожаловать в магазин. Что желаете сделать?', reply_markup=keyboard)
+    
+
 @bot.message_handler(func=lambda message: True)
 async def dont_understand(message):
     await bot.reply_to(message, 'Я тебя не понял')
